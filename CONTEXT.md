@@ -15,3 +15,13 @@ _Avoid_: 项目、仓库（这些范围更宽）
 **CodeGraph 索引**:
 对项目代码进行静态分析并构建知识图谱的后置步骤。仅对检测到的代码库以用户确认后执行。
 _Avoid_: 自动索引（必须用户确认）
+
+**命令别名 (Command Alias)**:
+在 `opencode.json` 的 `command` 节中定义的技能命令短名称。当用户选择 Matt's 技能组且使用 opencode 时生效。
+_Avoid_: 完整命令名（交互时使用别名更快）
+
+**Matt's 技能组**:
+一组由 Matt Pocock 编写的开发技能，通过配置的命令别名访问：
+- 有别名: `grw` (grill-with-docs), `gm` (grill-me), `tp` (to-spec), `tc` (to-tickets), `cw` (code-review)
+- 保持原名: `handoff`, `implement`, `wayfinder`, `tdd`
+_Avoid_: 技能分类为无别名组（除非用户未选 opencode）

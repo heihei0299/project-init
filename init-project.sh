@@ -163,6 +163,34 @@ fi
 
 echo ""
 
+# ── Step 4B: OpenCode 命令别名（仅 OpenCode + Matt's Skills） ──
+
+if $use_opencode && $use_mpskills; then
+  echo "[Step 4B/6] 注入 OpenCode 命令别名"
+  if [ -f "opencode.json" ]; then
+    python3 -c "
+import json
+with open('opencode.json') as f:
+    cfg = json.load(f)
+aliases = {
+    'grw': {'template': 'Run the grill-with-docs skill workflow.', 'description': 'Run grill-with-docs'},
+    'gm': {'template': 'Run the grill-me skill workflow.', 'description': 'Run grill-me'},
+    'tp': {'template': 'Run the to-spec skill workflow.', 'description': 'Run to-spec'},
+    'tc': {'template': 'Run the to-tickets skill workflow.', 'description': 'Run to-tickets'},
+    'cw': {'template': 'Run the code-review skill workflow.', 'description': 'Run code-review'}
+}
+cfg.setdefault('command', {}).update(aliases)
+with open('opencode.json', 'w') as f:
+    json.dump(cfg, f, indent=2)
+    f.write('\n')
+"
+    echo "  ✔ 命令别名已注入"
+  else
+    echo "  - opencode.json 不存在，跳过"
+  fi
+  echo ""
+fi
+
 # ── Step 5: 项目指令文件 ──
 
 if $use_opencode; then
