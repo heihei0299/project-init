@@ -42,7 +42,7 @@ yes_no() {
   done
 }
 
-# ── 入口：检测初始化状态 ──
+# ── Decision phase: 收集用户选择，构造 Plan ──
 
 echo "=== 项目初始化: $CURRENT_DIR ==="
 echo ""
@@ -62,8 +62,6 @@ else
 fi
 echo ""
 
-# ── 选择目标工具 ──
-
 echo "请选择要初始化的目标工具："
 echo "  [1] OpenCode"
 echo "  [2] Claude"
@@ -71,113 +69,127 @@ echo "  [3] 两者都选"
 read -r -p "请输入选项 (1/2/3): " tool_choice
 echo ""
 
-# ── 选择技能组 ──
-
 echo "请选择技能组框架："
 echo "  [1] Matt Pocock Skills (npx skills@latest add mattpocock/skills)"
 echo "  [2] Trellis (npx @mindfoldhq/trellis init)"
 read -r -p "请输入选项 (1/2): " skill_choice
 echo ""
 
-# ── 解析选择 ──
-
-use_opencode=false
-use_claude=false
+declare -A PLAN
 
 case "$tool_choice" in
-  1) use_opencode=true  ;;
-  2) use_claude=true    ;;
-  3) use_opencode=true; use_claude=true ;;
+  1) PLAN[tool]="opencode"  ;;
+  2) PLAN[tool]="claude"    ;;
+  3) PLAN[tool]="both"      ;;
   *) echo "❌ 无效选项，退出。"; exit 1 ;;
 esac
-
-use_trellis=false
-use_mpskills=false
 
 case "$skill_choice" in
-  1) use_mpskills=true ;;
-  2) use_trellis=true  ;;
+  1) PLAN[skills]="mpskills" ;;
+  2) PLAN[skills]="trellis"  ;;
   *) echo "❌ 无效选项，退出。"; exit 1 ;;
 esac
 
-# ── 汇总 ──
-
 echo "准备初始化："
-if $use_opencode; then echo "  • OpenCode 配置"; fi
-if $use_claude;   then echo "  • Claude 配置"; fi
-if $use_mpskills; then echo "  • Matt Pocock Skills"; fi
-if $use_trellis;  then echo "  • Trellis"; fi
+case "${PLAN[tool]}" in
+  opencode) echo "  • OpenCode 配置" ;;
+  claude)   echo "  • Claude 配置" ;;
+  both)     echo "  • OpenCode 配置"; echo "  • Claude 配置" ;;
+esac
+case "${PLAN[skills]}" in
+  mpskills) echo "  • Matt Pocock Skills" ;;
+  trellis)  echo "  • Trellis" ;;
+esac
 echo ""
 
-# ── Step 1/8: git init ──
+# ── Seam ──
+# Plan 已就绪。以下 Execution phase 只读 PLAN，不接触输入逻辑。
 
-echo "[Step 1/8] 初始化 Git 仓库"
-if [ -d ".git" ]; then
-  echo "  ✔ .git/ 已存在，跳过"
-else
-  git init
-  echo "  ✔ git init 完成"
-fi
-echo ""
+# ── Step 函数 ──
 
-# ── Step 2/8: .gitignore ──
-
-echo "[Step 2/8] 写入 .gitignore"
-ensure_file ".gitignore" "$SCRIPT_DIR/templates/gitignore" ".gitignore"
-echo ""
-
-# ── Step 3/8: OpenCode 配置 ──
-
-if $use_opencode; then
-  echo "[Step 3/8] 写入 OpenCode 配置 (opencode.json)"
-  ensure_file "opencode.json" "$SCRIPT_DIR/templates/opencode.json" "opencode.json"
-  echo ""
-fi
-
-# ── Step 4/8: Claude MCP 配置 ──
-
-if $use_claude; then
-  echo "[Step 4/8] 写入 Claude MCP 配置 (.claude/settings.json)"
-  ensure_dir ".claude" ".claude"
-  ensure_file ".claude/settings.json" "$SCRIPT_DIR/templates/claude-settings.json" ".claude/settings.json"
-  echo ""
-fi
-
-# ── Step 5/8: 技能组 ──
-
-echo "[Step 5/8] 安装技能组"
-
-if $use_mpskills; then
-  if [ -d ".agents/skills" ]; then
-    echo "  ✔ .agents/skills/ 已存在，跳过"
+step1_git_init() {
+  echo "[Step 1/6] 初始化 Git 仓库"
+  if [ -d ".git" ]; then
+    echo "  ✔ .git/ 已存在，跳过"
   else
-    echo "  → 正在安装 Matt Pocock Skills..."
-    if ! npx skills@latest add mattpocock/skills; then
-      echo "  ⚠ 安装失败，请检查网络或手动重试"
-    else
-      echo "  ✔ Matt Pocock Skills 已安装"
+    git init
+    echo "  ✔ git init 完成"
+  fi
+}
+
+step2_gitignore() {
+  echo "[Step 2/6] 写入 .gitignore"
+  ensure_file ".gitignore" "$SCRIPT_DIR/templates/gitignore" ".gitignore"
+}
+
+step3_templates() {
+  local -n plan_ref=$1
+  echo "[Step 3/6] 写入配置文件"
+
+  local TEMPLATES=(
+    "opencode|opencode.json|templates/opencode.json"
+    "claude|.claude/settings.json|templates/claude-settings.json"
+    "opencode|AGENTS.md|templates/AGENTS.md"
+    "claude|CLAUDE.md|templates/AGENTS.md"
+  )
+
+  for entry in "${TEMPLATES[@]}"; do
+    IFS='|' read -r cond target src <<< "$entry"
+    local should_run=false
+    case "$cond" in
+      opencode) [[ ${plan_ref[tool]} == opencode || ${plan_ref[tool]} == both ]] && should_run=true ;;
+      claude)   [[ ${plan_ref[tool]} == claude || ${plan_ref[tool]} == both ]] && should_run=true ;;
+    esac
+    if $should_run; then
+      local dir
+      dir=$(dirname "$target")
+      if [[ "$dir" != "." ]]; then
+        ensure_dir "$dir" "$dir"
+      fi
+      ensure_file "$target" "$SCRIPT_DIR/$src" "$target"
     fi
-  fi
-fi
+  done
+}
 
-if $use_trellis; then
-  echo "  → 正在安装 Trellis..."
-  if ! npx @mindfoldhq/trellis init; then
-    echo "  ⚠ 安装失败，请检查网络或手动重试"
-  else
-    echo "  ✔ Trellis 已安装"
-  fi
-fi
+step4_skills() {
+  local -n plan_ref=$1
+  echo "[Step 4/6] 安装技能组"
 
-echo ""
+  case "${plan_ref[skills]}" in
+    mpskills)
+      if [ -d ".agents/skills" ]; then
+        echo "  ✔ .agents/skills/ 已存在，跳过"
+      else
+        echo "  → 正在安装 Matt Pocock Skills..."
+        if ! npx skills@latest add mattpocock/skills; then
+          echo "  ⚠ 安装失败，请检查网络或手动重试"
+        else
+          echo "  ✔ Matt Pocock Skills 已安装"
+        fi
+      fi
+      ;;
+    trellis)
+      echo "  → 正在安装 Trellis..."
+      if ! npx @mindfoldhq/trellis init; then
+        echo "  ⚠ 安装失败，请检查网络或手动重试"
+      else
+        echo "  ✔ Trellis 已安装"
+      fi
+      ;;
+  esac
+}
 
-# ── Step 6/8: OpenCode 命令别名（仅 OpenCode + Matt's Skills） ──
+step5_aliases() {
+  local -n plan_ref=$1
+  echo "[Step 5/6] 注入 OpenCode 命令别名"
 
-if $use_opencode && $use_mpskills; then
-  echo "[Step 6/8] 注入 OpenCode 命令别名"
-  if [ -f "opencode.json" ]; then
-    if command -v python3 &>/dev/null; then
-      python3 -c "
+  local tool_ok=false
+  [[ ${plan_ref[tool]} == opencode || ${plan_ref[tool]} == both ]] && tool_ok=true
+
+  if $tool_ok && [[ ${plan_ref[skills]} == mpskills ]]; then
+    if [ -f "opencode.json" ]; then
+      if command -v python3 &>/dev/null; then
+        python3 -c "
 import json
 with open('opencode.json') as f:
     cfg = json.load(f)
@@ -194,62 +206,64 @@ with open('opencode.json', 'w') as f:
     json.dump(cfg, f, indent=2)
     f.write('\n')
 "
-      echo "  ✔ 命令别名已注入"
+        echo "  ✔ 命令别名已注入"
+      else
+        echo "  - python3 未安装，跳过命令别名注入"
+      fi
     else
-      echo "  - python3 未安装，跳过命令别名注入"
+      echo "  - opencode.json 不存在，跳过"
     fi
   else
-    echo "  - opencode.json 不存在，跳过"
+    echo "  - 跳过（仅 OpenCode + Matt's Skills 时注入）"
   fi
-  echo ""
-fi
-
-# ── Step 7/8: 项目指令文件 ──
-
-if $use_opencode; then
-  echo "[Step 7/8] 写入 AGENTS.md"
-  ensure_file "AGENTS.md" "$SCRIPT_DIR/templates/AGENTS.md" "AGENTS.md"
-  echo ""
-fi
-
-if $use_claude; then
-  echo "[Step 7/8] 写入 CLAUDE.md"
-  ensure_file "CLAUDE.md" "$SCRIPT_DIR/templates/AGENTS.md" "CLAUDE.md"
-  echo ""
-fi
-
-# ── Step 8/8: CodeGraph 索引 ──
-
-echo "[Step 8/8] CodeGraph 索引"
-
-detect_codebase() {
-  [ -d "src" ] && return 0
-  for ext in py js ts rs go java c cpp h rb php cs; do
-    if find . -maxdepth 1 -name "*.${ext}" -print -quit 2>/dev/null | grep -q .; then
-      return 0
-    fi
-  done
-  for build_file in Cargo.toml go.mod pom.xml build.gradle; do
-    [ -f "$build_file" ] && return 0
-  done
-  return 1
 }
 
-if detect_codebase; then
-  if yes_no "  是否初始化 CodeGraph 索引？" "n"; then
-    if command -v codegraph &>/dev/null; then
-      echo "  → 正在初始化 CodeGraph..."
-      codegraph init
-      echo "  ✔ CodeGraph 索引已创建"
+step6_codegraph() {
+  echo "[Step 6/6] CodeGraph 索引"
+
+  detect_codebase() {
+    [ -d "src" ] && return 0
+    for ext in py js ts rs go java c cpp h rb php cs; do
+      if find . -maxdepth 1 -name "*.${ext}" -print -quit 2>/dev/null | grep -q .; then
+        return 0
+      fi
+    done
+    for build_file in Cargo.toml go.mod pom.xml build.gradle; do
+      [ -f "$build_file" ] && return 0
+    done
+    return 1
+  }
+
+  if detect_codebase; then
+    if yes_no "  是否初始化 CodeGraph 索引？" "n"; then
+      if command -v codegraph &>/dev/null; then
+        echo "  → 正在初始化 CodeGraph..."
+        codegraph init
+        echo "  ✔ CodeGraph 索引已创建"
+      else
+        echo "  - codegraph CLI 未安装，跳过"
+      fi
     else
-      echo "  - codegraph CLI 未安装，跳过"
+      echo "  - 跳过 CodeGraph 初始化"
     fi
   else
-    echo "  - 跳过 CodeGraph 初始化"
+    echo "  - 未检测到源文件，跳过 CodeGraph init"
   fi
-else
-  echo "  - 未检测到源文件，跳过 CodeGraph init"
-fi
+}
+
+# ── Execution phase ──
+
+step1_git_init
+echo ""
+step2_gitignore
+echo ""
+step3_templates PLAN
+echo ""
+step4_skills PLAN
+echo ""
+step5_aliases PLAN
+echo ""
+step6_codegraph
 echo ""
 
 # ── 完成 ──
@@ -257,12 +271,17 @@ echo ""
 echo "========================"
 echo " 初始化完成！"
 echo " 目录: $CURRENT_DIR"
-printf " 工具: "
-if $use_opencode; then printf 'OpenCode '; fi
-if $use_claude;   then printf 'Claude '; fi
+echo -n " 工具: "
+case "${PLAN[tool]}" in
+  opencode) echo -n 'OpenCode ' ;;
+  claude)   echo -n 'Claude ' ;;
+  both)     echo -n 'OpenCode Claude ' ;;
+esac
 echo ""
-printf " 技能: "
-if $use_mpskills; then printf 'Matt Pocock Skills '; fi
-if $use_trellis;  then printf 'Trellis '; fi
+echo -n " 技能: "
+case "${PLAN[skills]}" in
+  mpskills) echo -n 'Matt Pocock Skills ' ;;
+  trellis)  echo -n 'Trellis ' ;;
+esac
 echo ""
 echo "========================"
