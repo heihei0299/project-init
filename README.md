@@ -43,11 +43,10 @@ templates/
 ├── gitignore              → 新项目的 .gitignore
 ├── opencode.json          → 新项目的 opencode.json
 ├── claude-settings.json   → 新项目的 .claude/settings.json
-├── AGENTS.md              → 新项目的 AGENTS.md / CLAUDE.md
-└── CLAUDE.md              → （已弃用，从 AGENTS.md 拷贝）
+└── AGENTS.md              → 新项目 AGENTS.md 和 CLAUDE.md 共用此源
 ```
 
-修改对应文件即可，无需改动 `init-project.sh` 本身。
+修改对应文件即可。`CLAUDE.md` 由 `AGENTS.md` 复制而来（在 TEMPLATE_MAP 中定义），无需单独维护。
 
 ---
 
@@ -68,7 +67,7 @@ templates/
 │   ├── gitignore              — 覆盖全场景的 .gitignore
 │   ├── opencode.json          — MCP 服务器配置 + 命令别名
 │   ├── claude-settings.json   — Claude MCP 服务器配置
-│   └── AGENTS.md              — CodeGraph 指令文档
+│   └── AGENTS.md              — AGENTS.md 和 CLAUDE.md 共用源
 ├── docs/
 │   └── adr/                   — 架构决策记录
 ├── opencode.json              — opencode MCP 配置
