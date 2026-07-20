@@ -46,3 +46,36 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: 审查并修复 init-project.sh command 注入
+
+**Date**: 2026-07-21
+**Task**: 审查并修复 init-project.sh command 注入
+**Branch**: `master`
+
+### Summary
+
+审查 step5_aliases 移除 templateFile 注入、改用 .opencode/commands/*.md 文件定义的改动。diff 较小，两条轴线均无问题，1 项修改已提交。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c14c459` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
