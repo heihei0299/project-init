@@ -115,6 +115,10 @@ coverage/
 .eslintcache
 .stylelintcache
 
+# === 项目本地 ===
+.scratch/
+.trellis/
+
 # === 其他通用 ===
 *.log
 *.tmp

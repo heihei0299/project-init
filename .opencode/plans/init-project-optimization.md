@@ -2,7 +2,7 @@
 
 ## 改动清单
 
-对 `/home/shial/Project/Project-Initialization/init-project.sh` 实施以下 6 项优化：
+对 `init-project.sh` 实施以下 6 项优化：
 
 ### 1. Step 编号平铺 1-8
 

@@ -1,4 +1,4 @@
-# Project Initialization
+# project-init
 
 个人项目初始化模板。支持 OpenCode / Claude 双工具选择，可选安装 Matt Pocock Skills 或 Trellis 技能组。
 
@@ -25,7 +25,7 @@ init-project.sh
 | 5 | 安装技能组（Matt Pocock Skills / Trellis） | 按选择 |
 | 6 | 注入 OpenCode 命令别名 (`grw`/`gm`/`tp`/`tc`/`cw`/`implement`) | OpenCode + Matt's Skills 时 |
 | 7 | 写入 `AGENTS.md` / `CLAUDE.md`（CodeGraph 指令） | 按工具选择 |
-| 8 | CodeGraph 索引（可选，检测代码库时询问） | 共用 |
+| 8 | CodeGraph 索引（可选，始终询问用户） | 共用 |
 
 所有步骤保持幂等，已存在则跳过。
 
