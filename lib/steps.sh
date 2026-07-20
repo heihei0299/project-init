@@ -5,7 +5,7 @@ step1_git_init() {
   if [ -d ".git" ]; then
     echo "  ✔ .git/ 已存在，跳过"
   elif cmd_available git; then
-    git init
+    git init -b main
     echo "  ✔ git init 完成"
   else
     echo "  - git 未安装，跳过"
