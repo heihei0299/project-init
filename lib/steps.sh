@@ -17,14 +17,7 @@ step3_templates() {
   local -n plan_ref=$1
   echo "[Step 3/6] 写入配置文件"
 
-  local TEMPLATES=(
-    "opencode|opencode.json|templates/opencode.json"
-    "claude|.claude/settings.json|templates/claude-settings.json"
-    "opencode|AGENTS.md|templates/AGENTS.md"
-    "claude|CLAUDE.md|templates/AGENTS.md"
-  )
-
-  for entry in "${TEMPLATES[@]}"; do
+  for entry in "${TEMPLATE_MAP[@]}"; do
     IFS='|' read -r cond target src <<< "$entry"
     local should_run=false
     case "$cond" in
@@ -37,7 +30,7 @@ step3_templates() {
       if [[ "$dir" != "." ]]; then
         ensure_dir "$dir" "$dir"
       fi
-      ensure_file "$target" "$SCRIPT_DIR/$src" "$target"
+      ensure_file "$target" "$TEMPLATES_DIR/$src" "$target"
     fi
   done
 }

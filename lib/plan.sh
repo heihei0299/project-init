@@ -1,5 +1,3 @@
-TEMPLATES_DIR="$SCRIPT_DIR/templates"
-
 collect_plan() {
   echo "=== 项目初始化: $(pwd) ==="
   echo ""
