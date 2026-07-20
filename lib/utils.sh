@@ -40,7 +40,7 @@ prompt_choice() {
 
   echo "$prompt" >&2
   for entry in "${choices_ref[@]}"; do
-    IFS='|' read -r key val desc <<< "$entry"
+    IFS="$CONFIG_DELIM" read -r key val desc <<< "$entry"
     echo "  [$key] $desc" >&2
   done
 
@@ -48,7 +48,7 @@ prompt_choice() {
   read -r -p "请输入选项: " result
 
   for entry in "${choices_ref[@]}"; do
-    IFS='|' read -r key val _ <<< "$entry"
+    IFS="$CONFIG_DELIM" read -r key val _ <<< "$entry"
     if [[ "$result" == "$key" ]]; then
       echo "$val"
       return 0
@@ -66,17 +66,21 @@ confirm_and_run() {
 
   if ! yes_no "$prompt" "$default"; then
     echo "  - 跳过 $label"
-    return 1
+    return 0
   fi
 
   if ! cmd_available "$1"; then
     echo "  - $1 未安装，跳过"
-    return 1
+    return 0
   fi
 
   echo "  → 正在初始化 $label..."
-  "$@"
-  echo "  ✔ $label 已创建"
+  if "$@"; then
+    echo "  ✔ $label 已创建"
+  else
+    echo "  ⚠ $label 创建失败" >&2
+    return 1
+  fi
 }
 
 yes_no() {

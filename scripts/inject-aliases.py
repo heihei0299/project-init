@@ -1,7 +1,10 @@
 import os
 import pathlib
+import sys
 
-cmds_dir = '.opencode/commands'
+root_dir = sys.argv[1] if len(sys.argv) > 1 else '.'
+
+cmds_dir = os.path.join(root_dir, '.opencode/commands')
 pathlib.Path(cmds_dir).mkdir(parents=True, exist_ok=True)
 
 cmd_entries = {
@@ -16,7 +19,7 @@ cmd_entries = {
 
 for name, info in cmd_entries.items():
     md_path = os.path.join(cmds_dir, f'{name}.md')
-    with open(md_path, 'w') as f:
+    with open(md_path, 'w', encoding='utf-8') as f:
         f.write('---\n')
         f.write(f'description: {info["desc"]}\n')
         f.write('---\n')
