@@ -12,6 +12,7 @@ step1_git_init() {
 
 step2_templates() {
   local -n plan_ref=$1
+  local entry cond target src
   step_echo 2
 
   for entry in "${TEMPLATE_MAP[@]}"; do
@@ -29,6 +30,7 @@ step2_templates() {
 
 step3_skills() {
   local -n plan_ref=$1
+  local entry key check_dir label cmd
   step_echo 3
 
   local s="${plan_ref[skills]}"
@@ -56,8 +58,11 @@ step4_aliases() {
   fi
 
   if cmd_available python3; then
-    python3 "$PROJECT_ROOT/scripts/inject-aliases.py" "$PROJECT_ROOT"
-    echo "  ✔ 命令别名已注入"
+    if python3 "$PROJECT_ROOT/scripts/inject-aliases.py" "$PROJECT_ROOT"; then
+      echo "  ✔ 命令别名已注入"
+    else
+      echo "  ⚠ 命令别名注入失败" >&2
+    fi
   else
     echo "  - python3 未安装，跳过命令别名注入"
   fi

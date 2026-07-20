@@ -37,6 +37,7 @@ prompt_choice() {
   local prompt="$1"
   local choices_name="$2"
   local -n choices_ref="$choices_name"
+  local entry key val desc _
 
   echo "$prompt" >&2
   for entry in "${choices_ref[@]}"; do

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ((BASH_VERSINFO[0] < 4)); then
-  echo "错误：需要 bash 4.0 或更高版本" >&2
+if ((BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3))); then
+  echo "错误：需要 bash 4.3 或更高版本（nameref 支持）" >&2
   exit 1
 fi
 
