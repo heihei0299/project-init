@@ -99,3 +99,77 @@ print_plan_summary
   [[ "$output" == *"Claude"* ]]
   [[ "$output" == *"Trellis"* ]]
 }
+
+# ── cmd_available ──
+
+@test "cmd_available: 存在命令返回 0" {
+  run bash -c 'source "$0/lib/utils.sh"; cmd_available bash && echo "found" || echo "not found"' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == *"found"* ]]
+}
+
+@test "cmd_available: 不存在命令返回 1" {
+  run bash -c 'source "$0/lib/utils.sh"; cmd_available nonexistent_cmd_xyz && echo "found" || echo "not found"' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == *"not found"* ]]
+}
+
+# ── tool_label / skills_label ──
+
+@test "tool_label: opencode" {
+  run bash -c '
+source "$0/lib/plan.sh"
+declare -A PLAN
+PLAN[tool]=opencode
+tool_label
+' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == "OpenCode" ]]
+}
+
+@test "tool_label: both" {
+  run bash -c '
+source "$0/lib/plan.sh"
+declare -A PLAN
+PLAN[tool]=both
+tool_label
+' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == "OpenCode Claude" ]]
+}
+
+@test "skills_label: mpskills" {
+  run bash -c '
+source "$0/lib/plan.sh"
+declare -A PLAN
+PLAN[skills]=mpskills
+skills_label
+' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == "Matt Pocock Skills" ]]
+}
+
+@test "skills_label: trellis" {
+  run bash -c '
+source "$0/lib/plan.sh"
+declare -A PLAN
+PLAN[skills]=trellis
+skills_label
+' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == "Trellis" ]]
+}
+
+# ── prompt_choice ──
+
+@test "prompt_choice: 选择有效选项" {
+  run bash -c '
+source "$0/lib/config.sh"
+source "$0/lib/utils.sh"
+prompt_choice "选择工具：" TOOL_CHOICES <<< "1"
+' "$BATS_TEST_DIRNAME/.."
+  [[ "$output" == *"opencode" ]]
+}
+
+@test "prompt_choice: 无效选项返回 1" {
+  run bash -c '
+source "$0/lib/config.sh"
+source "$0/lib/utils.sh"
+prompt_choice "选择工具：" TOOL_CHOICES <<< "9" 2>/dev/null
+' "$BATS_TEST_DIRNAME/.."
+  [ "$status" -eq 1 ]
+}

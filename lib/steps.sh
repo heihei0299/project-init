@@ -62,7 +62,7 @@ step5_aliases() {
 
   if $tool_ok && [[ ${plan_ref[skills]} == mpskills ]]; then
     if [ -f "opencode.json" ]; then
-      if command -v python3 &>/dev/null; then
+      if cmd_available python3; then
         python3 "$SCRIPT_DIR/scripts/inject-aliases.py"
         echo "  ✔ 命令别名已注入"
       else
@@ -80,7 +80,7 @@ step6_codegraph() {
   echo "[Step 6/6] CodeGraph 索引"
 
   if yes_no "  是否初始化 CodeGraph 索引？" "n"; then
-    if command -v codegraph &>/dev/null; then
+    if cmd_available codegraph; then
       echo "  → 正在初始化 CodeGraph..."
       codegraph init
       echo "  ✔ CodeGraph 索引已创建"

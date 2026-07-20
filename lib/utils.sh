@@ -18,6 +18,10 @@ ensure_dir() {
   fi
 }
 
+cmd_available() {
+  command -v "$1" &>/dev/null
+}
+
 try_install() {
   local label="$1"
   shift
@@ -27,6 +31,31 @@ try_install() {
   else
     echo "  ✔ $label 已安装"
   fi
+}
+
+prompt_choice() {
+  local prompt="$1"
+  local choices_name="$2"
+  local -n choices_ref="$choices_name"
+
+  echo "$prompt" >&2
+  for entry in "${choices_ref[@]}"; do
+    IFS='|' read -r key label _ <<< "$entry"
+    echo "  [$key] $label" >&2
+  done
+
+  local result
+  read -r -p "请输入选项: " result
+
+  for entry in "${choices_ref[@]}"; do
+    IFS='|' read -r key val _ <<< "$entry"
+    if [[ "$result" == "$key" ]]; then
+      echo "$val"
+      return 0
+    fi
+  done
+
+  return 1
 }
 
 yes_no() {

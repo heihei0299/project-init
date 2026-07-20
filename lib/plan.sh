@@ -32,31 +32,20 @@ collect_plan() {
   fi
   echo ""
 
-  echo "请选择要初始化的目标工具："
-  echo "  [1] OpenCode"
-  echo "  [2] Claude"
-  echo "  [3] 两者都选"
-  read -r -p "请输入选项 (1/2/3): " tool_choice
+  local tool_val skill_val
+
+  tool_val=$(prompt_choice "请选择要初始化的目标工具：" TOOL_CHOICES) || {
+    echo "❌ 无效选项，退出。"; exit 1
+  }
   echo ""
 
-  echo "请选择技能组框架："
-  echo "  [1] Matt Pocock Skills (npx skills@latest add mattpocock/skills)"
-  echo "  [2] Trellis (npx @mindfoldhq/trellis init)"
-  read -r -p "请输入选项 (1/2): " skill_choice
+  skill_val=$(prompt_choice "请选择技能组框架：" SKILL_CHOICES) || {
+    echo "❌ 无效选项，退出。"; exit 1
+  }
   echo ""
 
-  case "$tool_choice" in
-    1) PLAN[tool]="opencode" ;;
-    2) PLAN[tool]="claude"   ;;
-    3) PLAN[tool]="both"     ;;
-    *) echo "❌ 无效选项，退出。"; exit 1 ;;
-  esac
-
-  case "$skill_choice" in
-    1) PLAN[skills]="mpskills" ;;
-    2) PLAN[skills]="trellis"  ;;
-    *) echo "❌ 无效选项，退出。"; exit 1 ;;
-  esac
+  PLAN[tool]="$tool_val"
+  PLAN[skills]="$skill_val"
 
   echo "准备初始化："
   echo "  • $(tool_label)"

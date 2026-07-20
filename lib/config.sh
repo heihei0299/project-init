@@ -6,3 +6,14 @@ TEMPLATE_MAP=(
   "opencode|AGENTS.md|AGENTS.md"
   "claude|CLAUDE.md|AGENTS.md"
 )
+
+TOOL_CHOICES=(
+  "1|opencode|OpenCode"
+  "2|claude|Claude"
+  "3|both|两者都选"
+)
+
+SKILL_CHOICES=(
+  "1|mpskills|Matt Pocock Skills (npx skills@latest add mattpocock/skills)"
+  "2|trellis|Trellis (npx @mindfoldhq/trellis init)"
+)
