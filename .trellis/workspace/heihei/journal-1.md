@@ -79,3 +79,41 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: 低耦合重构完成
+
+**Date**: 2026-07-21
+**Task**: decouple-project-init
+**Branch**: `master`
+
+### Summary
+
+将 `init-project.sh`（278 行单体）拆分为模块化结构。
+
+### Main Changes
+
+- **init-project.sh** (29 行): 入口脚本，只做 source + 编排
+- **lib/utils.sh** (31 行): 辅助函数（ensure_file, ensure_dir, yes_no）
+- **lib/plan.sh** (79 行): 决策模块（用户输入收集、PLAN 构造、print_plan_summary）
+- **lib/steps.sh** (110 行): 执行模块（step1~6，step5 调用独立 Python 脚本）
+- **scripts/inject-aliases.py** (24 行): 从 step5 heredoc 提取的 Python 脚本
+- **tests/plan.bats** (93 行): bats 测试覆盖 utils + plan 决策逻辑
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a4cc55c` | refactor: 拆分 init-project.sh 为模块化结构 |
+| `f33a360` | chore(task): archive 07-21-decouple-project-init |
+
+### Testing
+
+- bash -n 对所有 .sh 文件通过
+- python3 -m py_compile 对 .py 文件通过
+- bats tests/: 11/11 tests all passed
+- 手动验证：OpenCode+Trellis / Claude+Trellis 两条路径输出一致
+
+### Status
+
+[OK] **Completed**
