@@ -238,33 +238,16 @@ with open('opencode.json', 'w') as f:
 step6_codegraph() {
   echo "[Step 6/6] CodeGraph 索引"
 
-  detect_codebase() {
-    [ -d "src" ] && return 0
-    for ext in py js ts rs go java c cpp h rb php cs; do
-      if find . -maxdepth 1 -name "*.${ext}" -print -quit 2>/dev/null | grep -q .; then
-        return 0
-      fi
-    done
-    for build_file in Cargo.toml go.mod pom.xml build.gradle; do
-      [ -f "$build_file" ] && return 0
-    done
-    return 1
-  }
-
-  if detect_codebase; then
-    if yes_no "  是否初始化 CodeGraph 索引？" "n"; then
-      if command -v codegraph &>/dev/null; then
-        echo "  → 正在初始化 CodeGraph..."
-        codegraph init
-        echo "  ✔ CodeGraph 索引已创建"
-      else
-        echo "  - codegraph CLI 未安装，跳过"
-      fi
+  if yes_no "  是否初始化 CodeGraph 索引？" "n"; then
+    if command -v codegraph &>/dev/null; then
+      echo "  → 正在初始化 CodeGraph..."
+      codegraph init
+      echo "  ✔ CodeGraph 索引已创建"
     else
-      echo "  - 跳过 CodeGraph 初始化"
+      echo "  - codegraph CLI 未安装，跳过"
     fi
   else
-    echo "  - 未检测到源文件，跳过 CodeGraph init"
+    echo "  - 跳过 CodeGraph 初始化"
   fi
 }
 
