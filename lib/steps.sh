@@ -62,7 +62,7 @@ step4_aliases() {
   fi
 
   if cmd_available python3; then
-    if python3 "$PROJECT_ROOT/scripts/inject-aliases.py" "$PROJECT_ROOT"; then
+    if python3 "$PROJECT_ROOT/scripts/inject-aliases.py" . ; then
       echo "  ✔ 命令别名已注入"
     else
       echo "  ⚠ 命令别名注入失败" >&2
