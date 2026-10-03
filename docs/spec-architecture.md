@@ -91,5 +91,5 @@ init-project.sh → utils.sh → config.sh → plan.sh
 ## Further Notes
 
 - 架构决策记录在 `docs/adr/0001` ~ `0004` 中
-- 术语表在 `CONTEXT.md` 中
+- 项目事实与架构决策分别以 README 和 `docs/adr/` 为准
 - 项目 README 包含了更新后的结构和配置指南
